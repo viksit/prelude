@@ -141,6 +141,43 @@ by Prelude.")
     '(defun enriched-decode-display-prop (start end &optional param)
        (list start end))))
 
+
+;; @viksit's changes
+
+;; get the arrow keys back
+(global-unset-key (vector (list 'shift 'left)))
+(global-unset-key (vector (list 'shift 'right)))
+(global-unset-key (vector (list 'shift 'up)))
+(global-unset-key (vector (list 'shift 'down)))
+
+;; please don't force me to use your set up.
+(defun disable-guru-mode ()
+  (guru-mode -1)
+)
+(add-hook 'prelude-prog-mode-hook 'disable-guru-mode t)
+
+;; enable elpy
+(elpy-enable)
+
+;; use a good theme
+(load-theme 'wombat t)
+
+;; load the desktop
+(desktop-save-mode 1)
+
+;; To set fonts, use M-x customize-face RET default
+;; and then set things.
+
+;; some sane commenting techniques
+(global-set-key (kbd "C-x ;") 'comment-or-uncomment-region)
+(global-set-key [C-tab] 'other-window)
+
+(toggle-scroll-bar -1)
+(add-to-list 'default-frame-alist '(ns-transparent-titlebar . nil))
+
+;; end @viksit's edits
+
+
 (prelude-eval-after-init
  ;; greet the use with some useful tip
  (run-at-time 5 nil 'prelude-tip-of-the-day))
