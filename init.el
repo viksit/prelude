@@ -159,8 +159,13 @@ by Prelude.")
 ;; enable elpy
 (elpy-enable)
 
+
 ;; use a good theme
 (load-theme 'wombat t)
+
+;; (disable-theme 'zenburn)
+;; (prelude-require-package 'wombat)
+;; (setq prelude-theme 'wombat)
 
 ;; load the desktop
 (desktop-save-mode 1)
@@ -174,6 +179,13 @@ by Prelude.")
 
 (toggle-scroll-bar -1)
 (add-to-list 'default-frame-alist '(ns-transparent-titlebar . nil))
+
+;; To use python3 and ipython for REPL
+(setq elpy-rpc-python-command "python3")
+(setenv "IPY_TEST_SIMPLE_PROMPT" "1")
+(setq python-shell-interpreter "ipython3"
+      python-shell-interpreter-args "-i")
+(setq elpy-rpc-backend "jedi")
 
 ;; end @viksit's edits
 
