@@ -187,6 +187,39 @@ by Prelude.")
       python-shell-interpreter-args "-i")
 (setq elpy-rpc-backend "jedi")
 
+(global-set-key [f8] 'neotree-toggle)
+
+
+(add-to-list 'auto-mode-alist '(".*\\.js\\'" . rjsx-mode))
+(add-to-list 'auto-mode-alist '("\\.py\\'" . (lambda () (elpy-enable) (python-mode))))
+
+
+;; highlight matching parenthesis
+(show-smartparens-mode)
+
+(global-auto-revert-mode t)
+(setq inhibit-startup-message t)
+(setq initial-scratch-message nil)
+
+
+;; via https://github.com/bastibe/.emacs.d/blob/master/init.el
+;; things to try
+;; (ido-mode t)
+;; (setq ido-enable-flex-matching t)
+;; (ido-vertical-mode)
+;; (setq ido-auto-merge-delay-time 1)
+
+
+;; enable sensible undo
+;; (require 'undo-tree)
+;; (global-undo-tree-mode)
+;; ;; make undo work the same way on the EN and DE keymap
+;; (define-key undo-tree-map (kbd "C--") 'undo-tree-undo)
+;; (define-key undo-tree-map (kbd "C-_") 'undo-tree-redo)
+
+
+;; (setq ring-bell-function #'ignore)
+
 ;; end @viksit's edits
 
 
