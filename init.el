@@ -177,7 +177,8 @@ by Prelude.")
 (global-set-key (kbd "C-x ;") 'comment-or-uncomment-region)
 (global-set-key [C-tab] 'other-window)
 
-(toggle-scroll-bar -1)
+;; (toggle-scroll-bar -1)
+
 (add-to-list 'default-frame-alist '(ns-transparent-titlebar . nil))
 
 ;; To use python3 and ipython for REPL
@@ -201,6 +202,11 @@ by Prelude.")
 (setq inhibit-startup-message t)
 (setq initial-scratch-message nil)
 
+(setq python-shell-enable-font-lock nil)
+;;(setq sml/no-confirm-load-theme t)
+;;(setq sml/theme 'dark) ;; or 'dark
+;;(add-hook 'after-init-hook #'sml/setup)
+;;(sml/setup)
 
 ;; via https://github.com/bastibe/.emacs.d/blob/master/init.el
 ;; things to try
