@@ -178,6 +178,7 @@ by Prelude.")
 (global-set-key [C-tab] 'other-window)
 
 ;; (toggle-scroll-bar -1)
+(scroll-bar-mode -1)
 
 (add-to-list 'default-frame-alist '(ns-transparent-titlebar . nil))
 
@@ -203,6 +204,13 @@ by Prelude.")
 (setq initial-scratch-message nil)
 
 (setq python-shell-enable-font-lock nil)
+(defun my-web-mode-hook ()
+  "Hooks for Web mode."
+  (setq web-mode-markup-indent-offset 2)
+  )
+(add-hook 'web-mode-hook  'my-web-mode-hook)
+(setq markdown-command "/usr/local/bin/pandoc")
+
 ;;(setq sml/no-confirm-load-theme t)
 ;;(setq sml/theme 'dark) ;; or 'dark
 ;;(add-hook 'after-init-hook #'sml/setup)
@@ -225,6 +233,22 @@ by Prelude.")
 
 
 ;; (setq ring-bell-function #'ignore)
+
+(require 'julia-repl)
+(add-hook 'julia-mode-hook 'julia-repl-mode) ;; always use minor mode
+
+;; Rust mode
+(add-hook 'rust-mode-hook 'cargo-minor-mode)
+(with-eval-after-load 'rust-mode
+  (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+
+(add-hook 'rust-mode-hook #'racer-mode)
+(add-hook 'racer-mode-hook #'eldoc-mode)
+(add-hook 'racer-mode-hook #'company-mode)
+
+(require 'rust-mode)
+(define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+(setq company-tooltip-align-annotations t)
 
 ;; end @viksit's edits
 
