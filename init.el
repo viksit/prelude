@@ -236,6 +236,10 @@ by Prelude.")
 
 (require 'julia-repl)
 (add-hook 'julia-mode-hook 'julia-repl-mode) ;; always use minor mode
+;; Add path for jupyter integration as well
+(setq julia-jupyter-conda-path "/Users/viksit/.julia/conda/3/bin:")
+(setenv "PATH" (concat julia-jupyter-conda-path (getenv "PATH")))
+(setq exec-path (append exec-path '("")))
 
 ;; Rust mode
 (add-hook 'rust-mode-hook 'cargo-minor-mode)
