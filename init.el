@@ -239,7 +239,7 @@ by Prelude.")
 ;; Add path for jupyter integration as well
 (setq julia-jupyter-conda-path "/Users/viksit/.julia/conda/3/bin:")
 (setenv "PATH" (concat julia-jupyter-conda-path (getenv "PATH")))
-(setq exec-path (append exec-path '("")))
+(setq exec-path (append exec-path '("/Users/viksit/.julia/conda/3/bin")))
 
 ;; Rust mode
 (add-hook 'rust-mode-hook 'cargo-minor-mode)
