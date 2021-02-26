@@ -144,6 +144,10 @@ by Prelude.")
 
 ;; @viksit's changes
 
+;; we like font size 13
+(set-face-attribute 'default nil :height 130)
+
+
 ;; get the arrow keys back
 (global-unset-key (vector (list 'shift 'left)))
 (global-unset-key (vector (list 'shift 'right)))
@@ -234,27 +238,143 @@ by Prelude.")
 
 ;; (setq ring-bell-function #'ignore)
 
-(require 'julia-repl)
-(add-hook 'julia-mode-hook 'julia-repl-mode) ;; always use minor mode
+;(require 'julia-repl)
+;(add-hook 'julia-mode-hook 'julia-repl-mode) ;; always use minor mode
 ;; Add path for jupyter integration as well
-(setq julia-jupyter-conda-path "/Users/viksit/.julia/conda/3/bin:")
-(setenv "PATH" (concat julia-jupyter-conda-path (getenv "PATH")))
-(setq exec-path (append exec-path '("/Users/viksit/.julia/conda/3/bin")))
+;; (setq julia-jupyter-conda-path "/Users/viksit/.julia/conda/3/bin:")
+;; (setenv "PATH" (concat julia-jupyter-conda-path (getenv "PATH")))
+;; (setq exec-path (append exec-path '("/Users/viksit/.julia/conda/3/bin")))
 
-;; Rust mode
-(add-hook 'rust-mode-hook 'cargo-minor-mode)
-(with-eval-after-load 'rust-mode
-  (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+;; Rust moed
+;; (add-hook 'rust-mode-hook 'cargo-minor-mode)
+;; (with-eval-after-load 'rust-mode
+;;   (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
 
-(add-hook 'rust-mode-hook #'racer-mode)
-(add-hook 'racer-mode-hook #'eldoc-mode)
-(add-hook 'racer-mode-hook #'company-mode)
+;; (add-hook 'rust-mode-hook #'racer-mode)
+;; (add-hook 'racer-mode-hook #'eldoc-mode)
+;; (add-hook 'racer-mode-hook #'company-mode)
 
-(require 'rust-mode)
-(define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+;; (require 'rust-mode)
+;; (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+;; (setq company-tooltip-align-annotations t)
+
+(helm-mode 1)
+;; (setq helm-projectile-fuzzy-match nil)
+(require 'helm-projectile)
+(helm-projectile-on)
+
+(require 'helm-config)
+
+(when (package-installed-p 'helm)
+  ;; change default prefix key
+  (global-set-key (kbd "C-c h") 'helm-command-prefix)
+  (global-unset-key (kbd "C-x c"))
+
+  ;; helm-M-x
+  (setq helm-M-x-fuzzy-match t)
+  (global-set-key (kbd "M-x") 'helm-M-x)
+
+  ;; helm-kill-ring
+  (global-set-key (kbd "M-y") 'helm-show-kill-ring)
+
+  ;; helm-mini
+  (global-set-key (kbd "C-x b") 'helm-mini)
+  (setq helm-buffers-fuzzy-matching t
+        helm-recentf-fuzzy-match t)
+
+  ;; helm-find-files
+  (global-set-key (kbd "C-x C-f") 'helm-find-files)
+)
+
+;;; -----------------------------
+;;; helm-projectile
+(when (package-installed-p 'helm-projectile)
+  (projectile-global-mode)
+  (helm-projectile-on)
+)
+
+;; get back the old helm behavior of having arrow keys
+;; move multiple directories back and forward for quicker navigation
+;; https://github.com/emacs-helm/helm/issues/2175
+;; (define-key helm-map (kbd "<left>") 'helm-previous-source)
+;; (define-key helm-map (kbd "<right>") 'helm-next-source)
+(customize-set-variable 'helm-ff-lynx-style-map t)
+
+
+;; Typescript and javascript stuff
+;; (add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode)) ;; auto-enable for .js/.jsx files
+;; (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
+
+;; (defun web-mode-init-hook ()
+;;   "Hooks for Web mode.  Adjust indent."
+;;   (setq web-mode-markup-indent-offset 2))
+;; (add-hook 'web-mode-hook  'web-mode-init-hook)
+
+;; typescript settings
+;; (setq-default typescript-indent-level 2)
+;; (add-to-list 'auto-mode-alist '("\\.tsx?$" . typescript-mode)) ;; auto-enable for .ts/.tsx files
+;; (add-to-list 'auto-mode-alist '("\\.js?$" . typescript-mode)) ;; auto-enable for .ts/.tsx files
+;; (setq typescript-mode-content-types-alist '(("tsx" . "\\.ts[x]?\\'")))
+;; (setq typescript-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
+
+(setq package-check-signature nil)
+
+(defun setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+  (flycheck-mode +1)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  ;; company is an optional dependency. You have to
+  ;; install it separately via package-install
+  ;; `M-x package-install [ret] company`
+  (company-mode +1))
+
+;; aligns annotation to the right hand side
 (setq company-tooltip-align-annotations t)
 
+;; formats the buffer before saving
+(add-hook 'before-save-hook 'tide-format-before-save)
+
+(add-hook 'typescript-mode-hook #'setup-tide-mode)
+
+(require 'web-mode)
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
+(add-hook 'web-mode-hook
+          (lambda ()
+            (when (string-equal "tsx" (file-name-extension buffer-file-name))
+              (setup-tide-mode))))
+;; enable typescript-tslint checker
+(flycheck-add-mode 'typescript-tslint 'web-mode)
+
+(add-hook 'js2-mode-hook #'setup-tide-mode)
+;; configure javascript-tide checker to run after your default javascript checker
+(flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)
+
+(require 'web-mode)
+(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+(add-hook 'web-mode-hook
+          (lambda ()
+            (when (string-equal "jsx" (file-name-extension buffer-file-name))
+              (setup-tide-mode))))
+;; configure jsx-tide checker to run after your default jsx checker
+(flycheck-add-mode 'javascript-eslint 'web-mode)
+(flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
+
+;; (use-package tide
+;;              :ensure t
+;;              :after (typescript-mode company flycheck)
+;;              :hook ((typescript-mode . tide-setup)
+;;                     (typescript-mode . tide-hl-identifier-mode)
+;;                     (before-save . tide-format-before-save)))
+
+
+
+
+
 ;; end @viksit's edits
+
 
 
 (prelude-eval-after-init
