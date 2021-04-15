@@ -113,6 +113,10 @@ by Prelude.")
 (require 'prelude-editor)
 (require 'prelude-global-keybindings)
 
+;; Please use packages. TY.
+(require 'use-package)
+
+
 ;; macOS specific settings
 (when (eq system-type 'darwin)
   (require 'prelude-macos))
@@ -162,7 +166,6 @@ by Prelude.")
 
 ;; enable elpy
 (elpy-enable)
-
 
 ;; use a good theme
 (load-theme 'wombat t)
@@ -221,48 +224,6 @@ by Prelude.")
 
 (setq markdown-command "/usr/local/bin/pandoc")
 
-;;(setq sml/no-confirm-load-theme t)
-;;(setq sml/theme 'dark) ;; or 'dark
-;;(add-hook 'after-init-hook #'sml/setup)
-;;(sml/setup)
-
-;; via https://github.com/bastibe/.emacs.d/blob/master/init.el
-;; things to try
-;; (ido-mode t)
-;; (setq ido-enable-flex-matching t)
-;; (ido-vertical-mode)
-;; (setq ido-auto-merge-delay-time 1)
-
-
-;; enable sensible undo
-;; (require 'undo-tree)
-;; (global-undo-tree-mode)
-;; ;; make undo work the same way on the EN and DE keymap
-;; (define-key undo-tree-map (kbd "C--") 'undo-tree-undo)
-;; (define-key undo-tree-map (kbd "C-_") 'undo-tree-redo)
-
-
-;; (setq ring-bell-function #'ignore)
-
-;(require 'julia-repl)
-;(add-hook 'julia-mode-hook 'julia-repl-mode) ;; always use minor mode
-;; Add path for jupyter integration as well
-;; (setq julia-jupyter-conda-path "/Users/viksit/.julia/conda/3/bin:")
-;; (setenv "PATH" (concat julia-jupyter-conda-path (getenv "PATH")))
-;; (setq exec-path (append exec-path '("/Users/viksit/.julia/conda/3/bin")))
-
-;; Rust moed
-;; (add-hook 'rust-mode-hook 'cargo-minor-mode)
-;; (with-eval-after-load 'rust-mode
-;;   (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
-
-;; (add-hook 'rust-mode-hook #'racer-mode)
-;; (add-hook 'racer-mode-hook #'eldoc-mode)
-;; (add-hook 'racer-mode-hook #'company-mode)
-
-;; (require 'rust-mode)
-;; (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
-;; (setq company-tooltip-align-annotations t)
 
 (helm-mode 1)
 ;; (setq helm-projectile-fuzzy-match nil)
@@ -307,25 +268,54 @@ by Prelude.")
 (customize-set-variable 'helm-ff-lynx-style-map t)
 
 
-;; TODO(viksit): This needs to be redone 20210409 ;;;
+;; Javascript/Typescript stuff
 
-;; Typescript and javascript stuff
-;; (add-to-list 'auto-mode-alist '("\\.jsx?$" . rjsx-mode)) ;; auto-enable for .js/.jsx files
-;; (setq web-mode-content-types-alist '(("css" . "\\.css?\\'")))
+(require 'flycheck)
 
-;; (defun web-mode-init-hook ()
-;;   "Hooks for Web mode.  Adjust indent."
-;;   (setq web-mode-markup-indent-offset 2))
-;; (add-hook 'web-mode-hook  'web-mode-init-hook)
+(add-hook 'after-init-hook #'global-flycheck-mode)
 
-;; ;; typescript settings
-;; (setq-default typescript-indent-level 2)
-;; (add-to-list 'auto-mode-alist '("\\.tsx?$" . typescript-mode)) ;; auto-enable for .ts/.tsx files
-;; ;; (add-to-list 'auto-mode-alist '("\\.jsx?$" . typescript-mode)) ;; auto-enable for .ts/.tsx files
-;; (setq typescript-mode-content-types-alist '(("tsx" . "\\.ts[x]?\\'")))
-;; ;; (setq typescript-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
+(setq-default flycheck-disabled-checkers
+              (append flycheck-disabled-checkers
+                      '(javascript-jshint)))
 
-;; (setq package-check-signature nil)
+(flycheck-add-mode 'javascript-eslint 'rjsx-mode)
+(setq-default flycheck-temp-prefix ".flycheck")
+
+(add-to-list 'auto-mode-alist '("\\.jsx?$" . rjsx-mode)) ;; auto-enable for .js/.jsx files
+(flycheck-add-mode 'javascript-eslint 'rjsx-mode)
+
+
+
+;; (use-package rjsx-mode
+;;   :mode ("\\.js\\'"
+;;          "\\.jsx\\'")
+;;   :config
+;;   (setq js2-mode-show-parse-errors nil
+;;         js2-mode-show-strict-warnings nil
+;;         js2-basic-offset 2
+;;         js-indent-level 2)
+;;   (setq-local flycheck-disabled-checkers (cl-union flycheck-disabled-checkers
+;;                                                    '(javascript-jshint))) ; jshint doesn't work for JSX
+;;   (electric-pair-mode 1))
+
+
+(use-package prettier-js
+  :defer t
+  :diminish prettier-js-mode
+  :hook (((js2-mode rjsx-mode) . prettier-js-mode)))
+
+;; (add-hook 'js2-mode-hook 'rjsx-mode 'prettier-js-mode)
+;; (add-hook 'js2-mode-hook 'rjsx-mode
+;;           (lambda ()
+;;             (add-hook 'before-save-hook 'prettier-js nil 'make-it-local)))
+
+;; (use-package tide
+;;              :ensure t
+;;              :after (typescript-mode company flycheck)
+;;              :hook ((typescript-mode . tide-setup)
+;;                     (typescript-mode . tide-hl-identifier-mode)
+;;                     (before-save . tide-format-before-save)))
+
 
 (defun setup-tide-mode ()
   (interactive)
@@ -339,74 +329,11 @@ by Prelude.")
   ;; `M-x package-install [ret] company`
   (company-mode +1))
 
-;; aligns annotation to the right hand side
+;; ;; aligns annotation to the right hand side
 (setq company-tooltip-align-annotations t)
 
 ;; formats the buffer before saving
 (add-hook 'before-save-hook 'tide-format-before-save)
-
-;; (add-hook 'typescript-mode-hook #'setup-tide-mode)
-
-;; (require 'web-mode)
-;; (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
-;; (add-hook 'web-mode-hook
-;;           (lambda ()
-;;             (when (string-equal "tsx" (file-name-extension buffer-file-name))
-;;               (setup-tide-mode))))
-;; ;; enable typescript-tslint checker
-
-;; (require 'flycheck)
-;; (flycheck-add-mode 'typescript-tslint 'web-mode)
-
-;; (add-hook 'js2-mode-hook #'setup-tide-mode)
-
-;; ;; configure javascript-tide checker to run after your default javascript checker
-;; ;; (flycheck-add-next-checker 'javascript-eslint 'append)
-
-;; (require 'web-mode)
-;; (add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
-;; (add-hook 'web-mode-hook
-;;           (lambda ()
-;;             (when (string-equal "jsx" (file-name-extension buffer-file-name))
-;;               (setup-tide-mode))))
-
-;; ;; configure jsx-tide checker to run after your default jsx checker
-;; (flycheck-add-mode 'javascript-eslint 'web-mode)
-;; (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
-
-;; ;; (add-to-list 'auto-mode-alist '(".*\\.js\\'" . tide-mode))
-
-(require 'use-package)
-
-(use-package rjsx-mode
-  :mode ("\\.js\\'"
-         "\\.jsx\\'")
-  :config
-  (setq js2-mode-show-parse-errors nil
-        js2-mode-show-strict-warnings nil
-        js2-basic-offset 2
-        js-indent-level 2)
-  (setq-local flycheck-disabled-checkers (cl-union flycheck-disabled-checkers
-                                                   '(javascript-jshint))) ; jshint doesn't work for JSX
-  (electric-pair-mode 1))
-
-(use-package add-node-modules-path
-  :defer t
-  :hook (((js2-mode rjsx-mode) . add-node-modules-path)))
-
-(use-package prettier-js
-  :defer t
-  :diminish prettier-js-mode
-  :hook (((js2-mode rjsx-mode) . prettier-js-mode)))
-
-;; End javascript/typescript section
-
-;; (use-package tide
-;;              :ensure t
-;;              :after (typescript-mode company flycheck)
-;;              :hook ((typescript-mode . tide-setup)
-;;                     (typescript-mode . tide-hl-identifier-mode)
-;;                     (before-save . tide-format-before-save)))
 
 (use-package lsp-mode
   :defer t
@@ -416,6 +343,7 @@ by Prelude.")
   :config
   (setq lsp-auto-configure t
         lsp-auto-guess-root t
+        lsp-intelephense-multi-root nil
         ;; don't set flymake or lsp-ui so the default linter doesn't get trampled
         lsp-diagnostic-package :none))
 
@@ -438,8 +366,10 @@ by Prelude.")
         lsp-ui-sideline-show-code-actions nil
         lsp-ui-peek-enable nil
         lsp-ui-imenu-enable nil
+        lsp-enable-file-watchers nil
         lsp-ui-doc-enable nil))
 
+;; End javascript/typescript section
 
 (show-paren-mode)
 
@@ -452,3 +382,118 @@ by Prelude.")
  (run-at-time 5 nil 'prelude-tip-of-the-day))
 
 ;;; init.el ends here
+
+;;; Scratch
+
+;;(setq sml/no-confirm-load-theme t)
+;;(setq sml/theme 'dark) ;; or 'dark
+;;(add-hook 'after-init-hook #'sml/setup)
+;;(sml/setup)
+
+;; via https://github.com/bastibe/.emacs.d/blob/master/init.el
+;; things to try
+;; (ido-mode t)
+;; (setq ido-enable-flex-matching t)
+;; (ido-vertical-mode)
+;; (setq ido-auto-merge-delay-time 1)
+
+
+;; enable sensible undo
+;; (require 'undo-tree)
+;; (global-undo-tree-mode)
+;; ;; make undo work the same way on the EN and DE keymap
+;; (define-key undo-tree-map (kbd "C--") 'undo-tree-undo)
+;; (define-key undo-tree-map (kbd "C-_") 'undo-tree-redo)
+
+
+;; (setq ring-bell-function #'ignore)
+
+;(require 'julia-repl)
+;(add-hook 'julia-mode-hook 'julia-repl-mode) ;; always use minor mode
+;; Add path for jupyter integration as well
+;; (setq julia-jupyter-conda-path "/Users/viksit/.julia/conda/3/bin:")
+;; (setenv "PATH" (concat julia-jupyter-conda-path (getenv "PATH")))
+;; (setq exec-path (append exec-path '("/Users/viksit/.julia/conda/3/bin")))
+
+;; Rust moed
+;; (add-hook 'rust-mode-hook 'cargo-minor-mode)
+;; (with-eval-after-load 'rust-mode
+;;   (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+
+;; (add-hook 'rust-mode-hook #'racer-mode)
+;; (add-hook 'racer-mode-hook #'eldoc-mode)
+;; (add-hook 'racer-mode-hook #'company-mode)
+
+;; (require 'rust-mode)
+;; (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+;; (setq company-tooltip-align-annotations t)
+
+
+;; Typescript and javascript stuff
+;; (add-to-list 'auto-mode-alist '("\\.jsx?$" . rjsx-mode)) ;; auto-enable for .js/.jsx files
+
+;; (setq web-mode-content-types-alist '(("css" . "\\.css?\\'")))
+
+;; (defun web-mode-init-hook ()
+;;   "Hooks for Web mode.  Adjust indent."
+;;   (setq web-mode-markup-indent-offset 2))
+;; (add-hook 'web-mode-hook  'web-mode-init-hook)
+
+;; ;; typescript settings
+;; (setq-default typescript-indent-level 2)
+;; (add-to-list 'auto-mode-alist '("\\.tsx?$" . typescript-mode)) ;; auto-enable for .ts/.tsx files
+;; ;; (add-to-list 'auto-mode-alist '("\\.jsx?$" . typescript-mode)) ;; auto-enable for .ts/.tsx files
+;; (setq typescript-mode-content-types-alist '(("tsx" . "\\.ts[x]?\\'")))
+;; ;; (setq typescript-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
+
+;; (setq package-check-signature nil)
+
+;; (defun setup-tide-mode ()
+;;   (interactive)
+;;   (tide-setup)
+;;   (flycheck-mode +1)
+;;   (setq flycheck-check-syntax-automatically '(save mode-enabled))
+;;   (eldoc-mode +1)
+;;   (tide-hl-identifier-mode +1)
+;;   ;; company is an optional dependency. You have to
+;;   ;; install it separately via package-install
+;;   ;; `M-x package-install [ret] company`
+;;   (company-mode +1))
+
+;; ;; aligns annotation to the right hand side
+;; (setq company-tooltip-align-annotations t)
+
+;; formats the buffer before saving
+;; (add-hook 'before-save-hook 'tide-format-before-save)
+;; (remove-hook `before-save-hook `tide-format-before-save)
+
+;; (add-hook 'typescript-mode-hook #'setup-tide-mode)
+
+;; (require 'web-mode)
+;; (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
+;; (add-hook 'web-mode-hook
+;;           (lambda ()
+;;             (when (string-equal "tsx" (file-name-extension buffer-file-name))
+;;               (setup-tide-mode))))
+;; ;; enable typescript-tslint checker
+
+;; (require 'flycheck)
+;; (flycheck-add-mode 'typescript-tslint 'web-mode)
+
+;; (add-hook 'js2-mode-hook #'setup-tide-mode)
+
+;; ;; configure javascript-tide checker to run after your default javascript checker
+;; (flycheck-add-next-checker 'javascript-eslint 'append)
+
+;; (require 'web-mode)
+;; (add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+;; (add-hook 'web-mode-hook
+;;           (lambda ()
+;;             (when (string-equal "jsx" (file-name-extension buffer-file-name))
+;;               (setup-tide-mode))))
+
+;; ;; configure jsx-tide checker to run after your default jsx checker
+;; (flycheck-add-mode 'javascript-eslint 'rjsx-mode)
+;;(flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
+
+;; ;; (add-to-list 'auto-mode-alist '(".*\\.js\\'" . tide-mode))
