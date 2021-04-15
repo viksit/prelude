@@ -305,7 +305,61 @@ by Prelude.")
 ;; We want to use - rjsx mode for all JS files
 
 
+(use-package rjsx-mode
+  :mode ("\\.js\\'"
+         "\\.jsx\\'")
+  :config
+  (setq js2-mode-show-parse-errors nil
+        js2-mode-show-strict-warnings nil
+        js2-basic-offset 2
+        js-indent-level 2)
+  (setq-local flycheck-disabled-checkers (cl-union flycheck-disabled-checkers
+                                                   '(javascript-jshint))) ; jshint doesn't work for JSX
+  (electric-pair-mode 1))
 
+
+;; (use-package prettier-js
+;;   :defer t
+;;   :diminish prettier-js-mode
+;;   :hook (((js2-mode rjsx-mode) . prettier-js-mode)))
+
+(use-package lsp-mode
+ :defer t
+ :diminish lsp-mode
+ :hook (((js2-mode rjsx-mode) . lsp))
+ :commands lsp
+ :config
+ (setq lsp-auto-configure t
+       lsp-auto-guess-root t
+       lsp-intelephense-multi-root nil
+       ;; don't set flymake or lsp-ui so the default linter doesn't get trampled
+       lsp-diagnostic-package :none))
+
+(use-package company-lsp
+ :defer t
+ :config
+ (setq company-lsp-cache-candidates 'auto
+       company-lsp-async t
+       company-lsp-enable-snippet nil
+       company-lsp-enable-recompletion t))
+
+(use-package lsp-ui
+ :defer t
+ :config
+ (setq lsp-ui-sideline-enable t
+       ;; disable flycheck setup so default linter isn't trampled
+       lsp-ui-flycheck-enable t
+       lsp-ui-sideline-show-symbol t
+       lsp-ui-sideline-enable t
+       lsp-ui-sideline-show-diagnostics t
+       lsp-ui-sideline-show-hover t
+       lsp-ui-sideline-show-code-actions t
+       lsp-ui-peek-enable t
+       lsp-ui-imenu-enable t
+       lsp-enable-file-watchers nil
+       lsp-ui-doc-enable nil))
+
+(setq lsp-signature-auto-activate nil)
 
 ;; End JS/TS stuff
 (show-paren-mode)
@@ -318,3 +372,4 @@ by Prelude.")
  (run-at-time 5 nil 'prelude-tip-of-the-day))
 
 ;;; init.el ends here
+
